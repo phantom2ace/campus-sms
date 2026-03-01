@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MINISTRY_HEAD
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SENT
+  SCHEDULED
+  PARTIALLY_FAILED
+}
+
+enum DeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+}
+
+model User {
+  id         String    @id @default(cuid())
+  name       String
+  email      String    @unique
+  password   String
+  role       Role
+  ministry   Ministry? @relation(fields: [ministryId], references: [id])
+  ministryId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Ministry {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  users     User[]
+  requests  MessageRequest[]
+  contacts  Contact[]
+  createdAt DateTime         @default(now())
+}
+
+model Segment {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  sortOrder Int       @default(0)
+  contacts  Contact[]
+  createdAt DateTime  @default(now())
+}
+
+model Contact {
+  id         String           @id @default(cuid())
+  name       String?
+  fullName   String?
+  phone      String           @unique
+  rawPhone   String?
+  level      String?
+  dateOfBirth DateTime?
+  segment    Segment          @relation(fields: [segmentId], references: [id])
+  segmentId  String
+  ministries Ministry[]
+  isActive   Boolean          @default(true)
+  deliveries DeliveryRecord[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+}
+
+model MessageRequest {
+  id              String        @id @default(cuid())
+  ministry        Ministry      @relation(fields: [ministryId], references: [id])
+  ministryId      String
+  programName     String
+  messageContent  String
+  targetSegments  String[]
+  targetLevels    String[]
+  specificPhoneNumbers String[]
+  sendImmediately Boolean       @default(true)
+  scheduledAt     DateTime?
+  status          RequestStatus @default(PENDING)
+  rejectionReason String?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  creditsUsed     Int           @default(0)
+  sentAt          DateTime?
+  deliveries      DeliveryRecord[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model DeliveryRecord {
+  id        String         @id @default(cuid())
+  request   MessageRequest @relation(fields: [requestId], references: [id])
+  requestId String
+  contact   Contact?       @relation(fields: [contactId], references: [id])
+  contactId String?
+  recipientPhone String?
+  status    DeliveryStatus @default(PENDING)
+  texifyRef String?
+  sentAt    DateTime?
+  updatedAt DateTime       @updatedAt
+
+  @@unique([requestId, contactId, recipientPhone])
+}
+
+model ScheduledTemplate {
+  id             String   @id @default(cuid())
+  name           String
+  messageContent String
+  targetSegments String[]
+  cronExpression String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
