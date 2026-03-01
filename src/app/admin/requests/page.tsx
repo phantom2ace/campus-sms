@@ -107,7 +107,8 @@ function AdminRequestsContent() {
             <AdminRequestCard
               key={request.id}
               request={request}
-              onUpdate={load}
+              onChanged={load}
+              isReadOnly={!isAdmin}
             />
           ))}
         </div>
