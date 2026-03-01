@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import AdminRequestCard from '@/components/AdminRequestCard';
@@ -20,7 +20,7 @@ type MessageRequest = {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SENT' | 'SCHEDULED' | 'PARTIALLY_FAILED';
 };
 
-export default function AdminRequestsPage() {
+function AdminRequestsContent() {
   const { data: session, status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
   const statusParam = searchParams?.get('status');
@@ -99,24 +99,27 @@ export default function AdminRequestsPage() {
         </div>
       ) : requests.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <p className="text-sm text-slate-400">
-            {statusParam
-              ? `No ${statusParam.toLowerCase()} SMS requests found.`
-              : 'No SMS requests found.'}
-          </p>
+          <p className="text-sm text-slate-400">No requests found.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {requests.map((request: MessageRequest) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {requests.map((request) => (
             <AdminRequestCard
               key={request.id}
               request={request}
-              onChanged={load}
-              isReadOnly={!isAdmin}
+              onUpdate={load}
             />
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminRequestsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-slate-400">Loading requests...</div>}>
+      <AdminRequestsContent />
+    </Suspense>
   );
 }
