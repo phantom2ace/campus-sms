@@ -17,5 +17,10 @@ export default async function Home() {
     redirect('/admin/dashboard');
   }
 
-  redirect('/ministry/dashboard');
+  if (user.role === 'MINISTRY_HEAD') {
+    redirect('/ministry/dashboard');
+  }
+
+  // Fallback if role is not recognized or missing
+  redirect('/unauthorized');
 }

@@ -15,39 +15,49 @@ const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('Authorize called with email:', credentials?.email);
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email and password are required');
         }
 
         const email = credentials.email.toLowerCase().trim();
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-          include: { ministry: true },
-        });
+        try {
+          console.log('Querying database for user...');
+          const user = await prisma.user.findUnique({
+            where: { email },
+            include: { ministry: true },
+          });
 
-        if (!user) {
-          console.log(`Login failed: No user found for email "${email}"`);
-          throw new Error('No account found with this email');
+          if (!user) {
+            console.log(`Login failed: No user found for email "${email}"`);
+            throw new Error('No account found with this email');
+          }
+
+          console.log('User found, comparing password...');
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isValid) {
+            console.log('Invalid password for user:', email);
+            throw new Error('Invalid password');
+          }
+
+          console.log('Login successful for user:', email);
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            ministryId: user.ministryId,
+            ministryName: user.ministry?.name || null,
+          };
+        } catch (error) {
+          console.error('Database error during authorize:', error);
+          throw error;
         }
-
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isValid) {
-          throw new Error('Invalid password');
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          ministryId: user.ministryId,
-          ministryName: user.ministry?.name || null,
-        };
       },
     }),
   ],
