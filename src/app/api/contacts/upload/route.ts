@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
               fullName: row.fullName || existing.fullName,
               dateOfBirth: row.dateOfBirth || existing.dateOfBirth,
               level: row.level || existing.level,
+              hostel: row.hostel || existing.hostel,
               ministries: rowMinistryId 
                 ? { connect: { id: rowMinistryId } } 
                 : undefined,
@@ -131,6 +132,7 @@ export async function POST(req: NextRequest) {
               name: row.name,
               fullName: row.fullName,
               level: row.level,
+              hostel: row.hostel,
               dateOfBirth: row.dateOfBirth,
               ministries: rowMinistryId ? { connect: { id: rowMinistryId } } : undefined,
             },

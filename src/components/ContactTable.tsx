@@ -20,6 +20,7 @@ type Contact = {
   phone: string;
   rawPhone: string | null;
   level: string | null;
+  hostel: string | null;
   isActive: boolean;
   dateOfBirth: Date | string | null;
   createdAt: Date | string;
@@ -30,12 +31,12 @@ type Contact = {
 export default function ContactTable({ contacts }: { contacts: Contact[] }) {
   const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ name: string; fullName: string; phone: string; level: string; dateOfBirth: string }>({ name: '', fullName: '', phone: '', level: '', dateOfBirth: '' });
+  const [editForm, setEditForm] = useState<{ name: string; fullName: string; phone: string; level: string; hostel: string; dateOfBirth: string }>({ name: '', fullName: '', phone: '', level: '', hostel: '', dateOfBirth: '' });
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newContact, setNewContact] = useState<{ name: string; fullName: string; phone: string; level: string; dateOfBirth: string }>({ name: '', fullName: '', phone: '', level: '', dateOfBirth: '' });
+  const [newContact, setNewContact] = useState<{ name: string; fullName: string; phone: string; level: string; hostel: string; dateOfBirth: string }>({ name: '', fullName: '', phone: '', level: '', hostel: '', dateOfBirth: '' });
 
   const filteredContacts = contacts.filter((contact) => {
     const nameMatch = (contact.name?.toLowerCase() || '').includes(searchTerm.toLowerCase());
@@ -79,13 +80,14 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
       fullName: contact.fullName || '',
       phone: contact.rawPhone || contact.phone,
       level: contact.level || '',
+      hostel: contact.hostel || '',
       dateOfBirth: contact.dateOfBirth ? new Date(contact.dateOfBirth).toISOString().split('T')[0] : ''
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditForm({ name: '', fullName: '', phone: '', level: '', dateOfBirth: '' });
+    setEditForm({ name: '', fullName: '', phone: '', level: '', hostel: '', dateOfBirth: '' });
   };
 
   const handleSave = async (id: string) => {
@@ -223,6 +225,17 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Hostel</label>
+              <input
+                type="text"
+                value={newContact.hostel}
+                onChange={(e) => setNewContact({ ...newContact, hostel: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Name of Hostel"
+              />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Date of Birth</label>
               <input
                 type="date"
@@ -258,6 +271,7 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
               <th className="py-2 pr-4 font-medium text-center">Full Name</th>
               <th className="py-2 pr-4 font-medium">Phone</th>
               <th className="py-2 pr-4 font-medium">Level</th>
+              <th className="py-2 pr-4 font-medium">Hostel</th>
               <th className="py-2 pr-4 font-medium">Ministry</th>
               <th className="py-2 pr-4 font-medium">Date of Birth</th>
               <th className="py-2 pr-4 font-medium text-right">Actions</th>
@@ -303,6 +317,15 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
                         onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
                         className="bg-black/20 border border-white/10 rounded px-2 py-1 text-white text-sm w-full focus:outline-none focus:border-blue-500"
                         placeholder="Level"
+                      />
+                    </td>
+                    <td className="py-2 pr-4">
+                      <input
+                        type="text"
+                        value={editForm.hostel}
+                        onChange={(e) => setEditForm({ ...editForm, hostel: e.target.value })}
+                        className="bg-black/20 border border-white/10 rounded px-2 py-1 text-white text-sm w-full focus:outline-none focus:border-blue-500"
+                        placeholder="Hostel"
                       />
                     </td>
                     <td className="py-2 pr-4">
@@ -357,6 +380,9 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
                     </td>
                     <td className="py-2 pr-4 text-slate-400">
                       {contact.level || '-'}
+                    </td>
+                    <td className="py-2 pr-4 text-slate-400">
+                      {contact.hostel || '-'}
                     </td>
                     <td className="py-2 pr-4">
                       <div className="flex flex-wrap gap-1">

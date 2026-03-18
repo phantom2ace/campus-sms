@@ -69,6 +69,7 @@ model Contact {
   phone      String           @unique
   rawPhone   String?
   level      String?
+  hostel     String?
   dateOfBirth DateTime?
   segment    Segment          @relation(fields: [segmentId], references: [id])
   segmentId  String

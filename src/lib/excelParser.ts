@@ -6,6 +6,7 @@ export type ExcelContactRow = {
   name?: string;
   fullName?: string;
   level?: string;
+  hostel?: string;
   ministryName?: string;
   dateOfBirth?: Date;
 };
@@ -54,6 +55,7 @@ export async function parseExcelContacts(
   );
 
   const levelIndex = lowerHeaders.findIndex(h => h.includes('level') || h.includes('year') || h.includes('grade'));
+  const hostelIndex = lowerHeaders.findIndex(h => h.includes('hostel') || h.includes('residence') || h.includes('hall'));
   const segmentIndex = lowerHeaders.findIndex(h => h.includes('segment') || h.includes('group'));
   const ministryIndex = lowerHeaders.findIndex(h => h.includes('ministry') || h.includes('department'));
 
@@ -168,6 +170,12 @@ export async function parseExcelContacts(
         if (rawLevel) level = String(rawLevel).trim();
       }
 
+      let hostel: string | undefined;
+      if (hostelIndex !== -1) {
+        const rawHostel = cells[hostelIndex];
+        if (rawHostel) hostel = String(rawHostel).trim();
+      }
+
       let ministryName: string | undefined;
       if (ministryIndex !== -1) {
         const rawMin = cells[ministryIndex];
@@ -193,6 +201,7 @@ export async function parseExcelContacts(
         fullName,
         segmentName,
         level,
+        hostel,
         ministryName,
         dateOfBirth
       });

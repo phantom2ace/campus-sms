@@ -19,24 +19,19 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    console.log('Attempting sign in with:', email);
     const result = await signIn('credentials', {
       email,
       password,
       redirect: false,
     });
 
-    console.log('Sign in result:', result);
-
     if (result?.error) {
-      console.error('Sign in error:', result.error);
       setError(result.error === 'CredentialsSignin' ? 'Invalid email or password' : result.error);
       setLoading(false);
       return;
     }
 
     if (result?.ok) {
-      console.log('Sign in successful, redirecting...');
       // Force a full reload to the root to ensure server session is updated
       window.location.href = '/';
     } else {

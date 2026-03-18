@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
   const name = String(body.name || '');
   const fullName = String(body.fullName || '');
   const level = String(body.level || '');
+  const hostel = String(body.hostel || '');
   const ministryId = user.role === 'MINISTRY_HEAD' ? user.ministryId : body.ministryId;
   const dateOfBirth = body.dateOfBirth ? new Date(body.dateOfBirth) : null;
 
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
         name,
         fullName,
         level,
+        hostel,
         dateOfBirth,
         ministries: ministryId ? { connect: { id: ministryId } } : undefined,
         isActive: true,
@@ -110,6 +112,7 @@ export async function POST(req: NextRequest) {
       name,
       fullName,
       level,
+      hostel,
       dateOfBirth,
       ministries: ministryId ? { connect: { id: ministryId } } : undefined,
       segment: { connect: { id: defaultSegment.id } },

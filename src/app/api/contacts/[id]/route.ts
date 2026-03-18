@@ -20,7 +20,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json();
-  const { name, fullName, phone, level, dateOfBirth } = body;
+  const { name, fullName, phone, level, hostel, dateOfBirth } = body;
 
   try {
     const contact = await prisma.contact.findUnique({
@@ -35,6 +35,7 @@ export async function PATCH(
     if (name !== undefined) data.name = name;
     if (fullName !== undefined) data.fullName = fullName;
     if (level !== undefined) data.level = level;
+    if (hostel !== undefined) data.hostel = hostel;
     if (dateOfBirth !== undefined) {
       data.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
     }
