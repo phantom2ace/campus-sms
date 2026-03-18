@@ -365,7 +365,7 @@ export default function RequestForm({ segments }: Props) {
             </span>
           </div>
           <p className="text-[10px] text-slate-500 italic">
-            * 1 credit per recipient for every 160 characters. Long messages (>160 chars) use 153 chars per part.
+            * 1 credit per recipient for every 160 characters. Long messages (&gt;160 chars) use 153 chars per part.
           </p>
         </div>
       )}
