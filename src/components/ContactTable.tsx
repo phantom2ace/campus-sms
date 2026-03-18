@@ -82,7 +82,7 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
       }
 
       setShowAddForm(false);
-      setNewContact({ name: '', fullName: '', phone: '', level: '', dateOfBirth: '' });
+      setNewContact({ name: '', fullName: '', phone: '', level: '', hostel: '', dateOfBirth: '' });
       router.refresh();
     } catch (error) {
       console.error(error);
