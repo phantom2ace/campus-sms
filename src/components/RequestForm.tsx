@@ -27,8 +27,61 @@ export default function RequestForm({ segments }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  
+  // Cost estimation state
+  const [recipientCount, setRecipientCount] = useState(0);
+  const [calculatingCount, setCalculatingCount] = useState(false);
 
   const levels = ['100', '200', '300', '400', '500'];
+
+  // Update recipient count when selection changes
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      const parsedPhoneNumbers = specificPhoneNumbers
+        .split(/[\n,]+/)
+        .map(num => num.trim())
+        .filter(num => num.length > 0);
+
+      if (selectedSegments.length === 0 && selectedLevels.length === 0 && parsedPhoneNumbers.length === 0) {
+        setRecipientCount(0);
+        return;
+      }
+
+      setCalculatingCount(true);
+      try {
+        const res = await fetch('/api/contacts/count', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetSegments: selectedSegments,
+            targetLevels: selectedLevels,
+            specificPhoneNumbers: parsedPhoneNumbers,
+          }),
+        });
+        const data = await res.json();
+        setRecipientCount(data.count || 0);
+      } catch (err) {
+        console.error('Failed to fetch count:', err);
+      } finally {
+        setCalculatingCount(false);
+      }
+    }, 500); // Debounce
+
+    return () => clearTimeout(timer);
+  }, [selectedSegments, selectedLevels, specificPhoneNumbers]);
+
+  const calculateCredits = () => {
+    if (!messageContent || recipientCount === 0) return 0;
+    
+    // Standard SMS is 160 characters. 
+    // Multi-part SMS are 153 characters per part.
+    const len = messageContent.length;
+    let parts = 1;
+    if (len > 160) {
+      parts = Math.ceil(len / 153);
+    }
+    return parts * recipientCount;
+  };
 
   // Default to all levels for Ministry Heads to ensure validation passes
   useEffect(() => {
@@ -289,10 +342,38 @@ export default function RequestForm({ segments }: Props) {
           {success}
         </p>
       )}
+
+      {/* Cost Estimation Box */}
+      {(recipientCount > 0 || calculatingCount) && (
+        <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-2">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-slate-400">Estimated Recipients:</span>
+            <span className="text-blue-400 font-medium">
+              {calculatingCount ? 'Calculating...' : recipientCount}
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-slate-400">Message Parts:</span>
+            <span className="text-blue-400 font-medium">
+              {messageContent ? (messageContent.length > 160 ? Math.ceil(messageContent.length / 153) : 1) : 0}
+            </span>
+          </div>
+          <div className="pt-2 border-t border-blue-500/10 flex justify-between items-center">
+            <span className="text-sm font-medium text-slate-200">Total Estimated Credits:</span>
+            <span className="text-sm font-bold text-blue-400">
+              {calculatingCount ? '...' : calculateCredits()}
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 italic">
+            * 1 credit per recipient for every 160 characters. Long messages (>160 chars) use 153 chars per part.
+          </p>
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={submitting}
-        className="px-4 py-2 bg-blue-600 disabled:bg-blue-600/40 rounded-xl text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+        className="px-4 py-2 bg-blue-600 disabled:bg-blue-600/40 rounded-xl text-white text-sm font-medium hover:bg-blue-700 transition-colors w-full"
       >
         {submitting ? 'Submitting...' : 'Submit Request'}
       </button>

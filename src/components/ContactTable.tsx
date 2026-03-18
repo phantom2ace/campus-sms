@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Download, Plus, Trash2, Edit2, Check, X, Search } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 type Segment = {
   id: string;
@@ -46,6 +48,23 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
     const matchesLevel = filterLevel ? contact.level === filterLevel : true;
     return matchesSearch && matchesLevel;
   });
+
+  const handleExport = () => {
+    const exportData = filteredContacts.map(contact => ({
+      'Full Name': contact.fullName || contact.name || '',
+      'Phone': contact.phone,
+      'Level': contact.level || '',
+      'Hostel': contact.hostel || '',
+      'Ministry': contact.ministries?.map(m => m?.name).join(', ') || 'General',
+      'Date of Birth': contact.dateOfBirth ? new Date(contact.dateOfBirth).toLocaleDateString('en-GB') : '',
+      'Created At': new Date(contact.createdAt).toLocaleDateString('en-GB'),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
+    XLSX.writeFile(workbook, `church_members_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   const handleAddContact = async () => {
     try {
@@ -173,12 +192,22 @@ export default function ContactTable({ contacts }: { contacts: Contact[] }) {
             <option value="500">Level 500</option>
           </select>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
-        >
-          Add Member
-        </button>
+        <div className="flex gap-3 w-full md:w-auto">
+          <button
+            onClick={handleExport}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-2 px-4 rounded-lg border border-white/10 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export
+          </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Member
+          </button>
+        </div>
       </div>
 
       {showAddForm && (
