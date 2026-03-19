@@ -12,42 +12,48 @@ export default async function AdminContactsPage() {
     return <UnauthorizedPage />;
   }
 
-  const contacts = await (prisma.contact as any).findMany({
-    where: { 
-      isActive: true,
-      ...(session.user.role === 'MINISTRY_HEAD' ? { ministries: { some: { id: session.user.ministryId } } } : {}),
-    },
-    include: { 
-      segment: true,
-      ministries: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+  try {
+    const contacts = await (prisma.contact as any).findMany({
+      where: { 
+        isActive: true,
+        ...(session.user.role === 'MINISTRY_HEAD' ? { ministries: { some: { id: session.user.ministryId } } } : {}),
+      },
+      include: { 
+        segment: true,
+        ministries: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
-  // Transform dates to strings/compatible types if needed for the client component, 
-  // though Next.js Server Components serialize Date objects to strings automatically in props.
-  // However, TypeScript might complain if the types don't exactly match.
-  // Let's cast to any to satisfy the component prop type if needed, or better, update the component type.
-  // The error was: Type 'import("@prisma/client").Contact[]' is not assignable to type 'Contact[]'.
-  // Type 'Contact' is missing properties name, level, dateOfBirth.
-  // This confirms the Prisma Client types seen by TS in this file are stale.
-  // We'll cast to any as a temporary workaround until VS Code picks up the new types fully.
-  
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white mb-1">
-          Members
-        </h1>
-        <p className="text-slate-400 text-sm">
-          Manage student phone numbers and upload Excel sheets by level.
-        </p>
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-1">
+            Members
+          </h1>
+          <p className="text-slate-400 text-sm">
+            Manage student phone numbers and upload Excel sheets by level.
+          </p>
+        </div>
+        <FileUpload />
+        <ContactTable contacts={contacts} />
       </div>
-      <FileUpload />
-      <ContactTable contacts={contacts as any} />
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Database error in AdminContactsPage:', error);
+    return (
+      <div className="p-8 text-center bg-red-500/10 border border-red-500/20 rounded-2xl">
+        <h2 className="text-xl font-bold text-red-400 mb-2">Database Connection Error</h2>
+        <p className="text-slate-400 mb-4">
+          We couldn't load the members list. This usually happens if the database hasn't been updated with the latest columns.
+        </p>
+        <code className="block p-3 bg-black/40 rounded text-xs text-slate-300 mb-4">
+          Try running: npx prisma db push
+        </code>
+      </div>
+    );
+  }
 }
 
