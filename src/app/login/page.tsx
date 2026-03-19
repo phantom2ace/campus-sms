@@ -113,13 +113,6 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-
-        {/* Test credentials hint — remove in production */}
-        <div className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-slate-500">
-          <p className="font-medium text-slate-400 mb-2">Test Accounts:</p>
-          <p>Admin: admin@campus.edu / password123</p>
-          <p>Ministry: prayer@campusministry.com / ministry123</p>
-        </div>
       </div>
     </div>
   );
